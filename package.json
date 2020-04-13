@@ -1,0 +1,33 @@
+{
+  "name": "beer-api",
+  "version": "0.0.1",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alarichadef/beer-api.git"
+  },
+  "keywords": [
+    "beer",
+    "biere",
+    "cheap",
+    "bar",
+    "pub"
+  ],
+  "author": "Alaric Hadef",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/alarichadef/beer-api/issues"
+  },
+  "homepage": "https://github.com/alarichadef/beer-api#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "mongodb": "^3.5.5",
+    "multer": "^1.4.2",
+    "node-fetch": "^2.6.0"
+  }
+}
