@@ -2,6 +2,8 @@ const express = require('express');
 const app = express();
 var multer  = require('multer');
 var upload = multer();
+var cors = require('cors')
+
 
 const MongoClient = require('mongodb').MongoClient;
 const uri = "mongodb+srv://alaric:bierebelge@cluster0-dstvq.mongodb.net/test?retryWrites=true&w=majority";
@@ -10,6 +12,10 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 client.connect(err => {
   app.locals.db = client.db('beers-back');
 });
+
+
+app.use(cors())
+
 
 app.get('/', function (req, res) {
   res.send('Hello World!');
@@ -67,7 +73,8 @@ app.get('/list-beers', (req, res) => {
         res.status(500).send({error: 'RIP'});
     }
 });
+var port = process.env.PORT || 5000;
 
-app.listen(5000, function () {
-  console.log('Example app listening on port 5000!')
+app.listen(port, function () {
+  console.log(`Example app listening on port ${port}!`);
 })
