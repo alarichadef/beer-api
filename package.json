@@ -2,6 +2,9 @@
   "name": "beer-api",
   "version": "0.0.1",
   "description": "",
+  "engines": {
+    "node": "14.x"
+  },
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
