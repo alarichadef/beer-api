@@ -5,8 +5,10 @@ var router = express.Router()
 
 
 router.get('/', (req, res) => {
-    Bar.find({ __deleted: { $exists: true } }).toArray().then(bars => {
-        res.status(200).json(bars);
+    const skip =  0;
+    const limit = 0;
+    Bar.find({ __deleted: { $exists: true } }).skip(skip).limit(limit).execute().then(bars => {
+        res.status(200).json(Bar.toListApi(bars));
     })
 });
 
@@ -15,23 +17,21 @@ router.get('/:id', (req, res) => {
     if (!id) {
         return res.status(400).json({message: "Missing id parameter"});
     }
-    Bar.get({id}).then(result => {
-        if(!result) {
+    Bar.get({id}).then(bar => {
+        if(!bar) {
             return res.status(404).json({message: `Bar ${id} not found`});
         }
-        let bar = result;
         let beersName = bar.beers.map(beer => {
             return beer.name;
         });
-        Beer.filter({name: {$in: beersName}}).toArray().then(objects => {
-            let beers = Beer.fromJSON(objects);
+        Beer.filter({name: {$in: beersName}}).execute().then(beers => {
             beers.forEach(beer => {
                 let beerIndex = bar.beers.findIndex(_beer => _beer.name === beer.name);
                 if (beerIndex > -1) {
-                    bar.beers[beerIndex] = {...bar.beers[beerIndex], ...beer}
+                    bar.beers[beerIndex] = {...bar.beers[beerIndex], ...beer.toApi()}
                 }
             });
-            return res.status(200).json(bar);
+            return res.status(200).json(bar.toApi());
         }).catch(e => {
             return res.status(400).json({message: `error while finding beer related to bar`});
         });
