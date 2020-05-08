@@ -42,6 +42,14 @@ class Beer extends BeerModel {
 
 	}
 
+	static toListApi(beers) {
+		return beers.map(beer =>
+			beer.toApi()
+		)
+	}
+
+
+
 }
 
 module.exports = Beer;

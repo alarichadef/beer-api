@@ -40,4 +40,13 @@ Utils.isDateIncluded = (date, dMin, dMax) => {
     return Date.parse(date) > Date.parse(dMin) ? (Date.parse(date) < Date.parse(dMax) ? true : false) : false;
 }
 
+//If we store date with a simple datetime 1970 with correct hours/minute
+// just compute time value from it
+Utils.getTimeFromHourMinuteSeconde = () => {
+    let date = new Date;
+    return date.getSeconds() * 1000
+        + date.getMinutes() * 60 * 1000
+        + date.getHours() * 60 * 60 * 1000;
+}
+
 module.exports = Utils;

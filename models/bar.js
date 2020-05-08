@@ -84,7 +84,7 @@ class Bar extends BarModel {
 		if (!openingDay) {
 			return false;
 		}
-		let current = new Date();
+		let current = new Date(Utils.getTimeFromHourMinuteSeconde());
 		current = current.toISOString();
 		return Utils.isDateIncluded(current, openingDay.opening, openingDay.closing)
 	}
@@ -97,7 +97,7 @@ class Bar extends BarModel {
 		if (!hHDay) {
 			return false;
 		}
-		let current = new Date();
+		let current = new Date(Utils.getTimeFromHourMinuteSeconde());
 		current = current.toISOString();
 		return Utils.isDateIncluded(current, hHDay.start, hHDay.end)
 	}
