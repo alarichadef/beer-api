@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/alarichadef/beer-api#readme",
   "dependencies": {
-    "@jsmrcaga/mongo": "^1.0.0",
+    "@jsmrcaga/mongo": "^1.1.0",
     "aws-sdk": "^2.656.0",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",

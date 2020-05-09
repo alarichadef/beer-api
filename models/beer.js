@@ -15,7 +15,40 @@ class Beer extends BeerModel {
 		this.ibu = ibu;
 		this.descriptionObject = descriptionObject
 		this.rateBeerUrl = rateBeerUrl
-    }
+	}
+
+	toApi() {
+		let {
+			name,
+			picture,
+			brewery,
+			alcohol,
+			type,
+			description,
+			ibu,
+			descriptionObject,
+		} = this;
+
+		return {
+			name,
+			picture,
+			brewery,
+			alcohol,
+			type,
+			description,
+			ibu,
+			descriptionObject,
+		}
+
+	}
+
+	static toListApi(beers) {
+		return beers.map(beer =>
+			beer.toApi()
+		)
+	}
+
+
 
 }
 
