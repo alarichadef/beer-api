@@ -212,7 +212,7 @@ router.post('/upload-mister', upload.single('file'), (req, res) => {
                 let description = {};
                 for (let key of ['Eye', 'Mouth', 'Nose']) {
                     if (beer[key]) {
-                        description[key] = beer[key]
+                        description[key.toLowerCase()] = beer[key]
                     }
                 }
                 let newBeer = {

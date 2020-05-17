@@ -41,10 +41,11 @@ class Bar extends BarModel {
 	//Take an array of bars and format it with the good data for the list API
 	static toListApi(bars) {
 		return bars.map(bar => {
-			let {id, name, location, tags} = bar
+			let {id, name, location, tags, address} = bar
 			return {
 				id,
 				name,
+				address,
 				location,
 				tags,
 				opened: bar.isOpened(),
@@ -56,11 +57,12 @@ class Bar extends BarModel {
 
 	//Current bar object format to be sent through api
 	toApi() {
-		let {id, name, location, tags, type, characteristics, happyHourTime, openingTime, privateaserId, privateaserBookingUrl, beers, keywords} = this;
+		let {id, name, address, location, tags, type, characteristics, happyHourTime, openingTime, privateaserId, privateaserBookingUrl, beers, keywords} = this;
 		return {
 			id,
 			name,
 			location,
+			address,
 			tags,
 			type,
 			characteristics,
@@ -106,10 +108,10 @@ class Bar extends BarModel {
 	get cheapestBeer() {
 		if (!this.beers.length) {
 			return this.minPriceHappy ? this.minPrice ? Math.min(this.minPrice, this.minPriceHappy) : this.minPriceHappy : this.minPriceHappy;
-		}
+		};
 		let cheapestBeer = Math.min.apply(null, this.beers.map(beer => {
 			return beer.priceHappy ? beer.priceBeer ? Math.min(beer.priceHappy, beer.priceBeer) : beer.priceHappy : beer.priceBeer;
-		}))
+		}));
 		return cheapestBeer;
 	}
 
