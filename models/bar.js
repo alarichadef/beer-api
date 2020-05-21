@@ -109,11 +109,12 @@ class Bar extends BarModel {
 		if (!this.beers.length) {
 			return this.minPriceHappy ? this.minPrice ? Math.min(this.minPrice, this.minPriceHappy) : this.minPriceHappy : this.minPriceHappy;
 		};
-		let cheapestBeer = Math.min.apply(null, this.beers.map(beer => {
-			return beer.priceHappy ? beer.priceBeer ? Math.min(beer.priceHappy, beer.priceBeer) : beer.priceHappy : beer.priceBeer;
+		let cheapestBeer = Math.min.apply(null, this.beers.map(b => {
+			return Math.min.apply(null, b.pricing.map(beer => {
+				return beer.priceHappy ? beer.priceBeer ? Math.min(beer.priceHappy, beer.priceBeer) : beer.priceHappy : beer.priceBeer;
+			}));
 		}));
 		return cheapestBeer;
 	}
-
 }
 module.exports = Bar;

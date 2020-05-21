@@ -235,16 +235,34 @@ router.post('/upload-mister', upload.single('file'), (req, res) => {
             let priceBeer = beer.regularPrice;
             let priceHappy = beer.happyHourPrice;
             //Draft or bottlled ?
-            let type = beer.type;
+            let typeContainer = beer.type;
             let volume = beer.volume;
-            let beerBar = {
-                name: beer.name,
-                priceBeer,
-                priceHappy,
-                type,
-                volume
-            };
-            beersBar.push(beerBar);
+            //Check if we already got this beer for this bar
+            //If yes, add informations to the beer
+            //otherwise create it
+            let beerIndex = beersBar.findIndex(b => b.name === beer.name);
+            if (beerIndex > -1) {
+                let pricingBeer = {
+                    priceBeer,
+                    priceHappy,
+                    typeContainer,
+                    volume
+                }
+                beersBar[beerIndex].pricing.push(pricingBeer);
+            } else {
+                let beerBar = {
+                    name: beer.name,
+                    pricing: [
+                        {
+                            priceBeer,
+                            priceHappy,
+                            typeContainer,
+                            volume
+                        }
+                    ]
+                };
+                beersBar.push(beerBar);
+            }
         });
 
         //So we have got the beers belonging to the bars
