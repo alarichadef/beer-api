@@ -52,7 +52,7 @@ class Bar extends BarModel {
 				inHappy: bar.isHH(),
 				cheapestBeer: bar.cheapestBeer
 			}
-		})
+		});
 	}
 
 	//Current bar object format to be sent through api
@@ -76,6 +76,16 @@ class Bar extends BarModel {
 			inHappy: this.isHH(),
 			cheapestBeer: this.cheapestBeer
 		}
+	}
+
+	static toListUserApi(bars) {
+		return bars.map(bar => {
+			let {id, name} = bar
+			return {
+				id,
+				name,
+			}
+		});
 	}
 
 	//Compute if it's opened
