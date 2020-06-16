@@ -2,6 +2,26 @@ const express = require('express');
 var router = express.Router()
 const Beer = require('../models/beer');
 
+router.get('/list-names', (req, res) => {
+    Beer.find().execute().then(beers => {
+        res.status(200).json(Beer.toListNameApi(beers));
+    });
+});
+
+router.get('/', (req, res) => {
+    let skip =  parseInt(req.query.start);
+    let limit = parseInt(req.query.length);
+    if (!skip || isNaN(skip) || skip < 0) {
+        skip = 0;
+    }
+    if (!limit || isNaN(limit) || (limit - skip > 20)) {
+        limit = skip + 19;
+    }
+    Beer.find().skip(skip).limit(limit).execute().then(beers => {
+        res.status(200).json(Beer.toListApi(beers));
+    })
+});
+
 router.post('/', (req, res) => {
     let {name, picture, description, alcohol, type, brewery} = req.body;
     //TODO VALIDATE DATA
@@ -93,12 +113,6 @@ router.delete('/:name', (req, res) => {
         return res.status(400).json({message: `Several ${name} have been found`});
     });
 
-});
-
-router.get('/', (req, res) => {
-    Beer.find({ __deleted: { $exists: true } }).execute().then(beers => {
-        res.status(200).json(Beer.toListApi(beers));
-    });
 });
 
 module.exports = router;
