@@ -42,13 +42,21 @@ class Beer extends BeerModel {
 
 	}
 
+	toNameApi() {
+		return this.name
+	}
+
 	static toListApi(beers) {
 		return beers.map(beer =>
 			beer.toApi()
 		)
 	}
 
-
+	static toListNameApi(beers) {
+		return beers.map(beer =>
+			beer.toNameApi()
+		)
+	}
 
 }
 
