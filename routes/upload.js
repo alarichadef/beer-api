@@ -307,8 +307,8 @@ router.post('/upload-mister', upload.single('file'), (req, res) => {
                 closing: d
             }
         };
-        let startHappy = bar?.startHappyHour?.iso || d;
-        let endHappy = bar?.endHappyHour?.iso || d;
+        let startHappy = new Date(bar?.startHappyHour?.iso || d).getTime();
+        let endHappy = new Date(bar?.endHappyHour?.iso || d).getTime();
 
         let happyHourTime = {
             monday: {

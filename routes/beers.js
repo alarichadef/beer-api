@@ -9,8 +9,8 @@ router.get('/list-names', (req, res) => {
 });
 
 router.get('/', (req, res) => {
-    let skip =  parseInt(req.query.start);
-    let limit = parseInt(req.query.length);
+    let skip =  parseInt(req.query.offset);
+    let limit = parseInt(req.query.limit);
     if (!skip || isNaN(skip) || skip < 0) {
         skip = 0;
     }

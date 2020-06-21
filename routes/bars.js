@@ -9,13 +9,28 @@ const owner = require('../middleware/owner');
 
 var router = express.Router()
 
-
 router.get('/', (req, res) => {
-    const skip =  0;
-    const limit = 0;
-    Bar.find({ __deleted: { $exists: true } }).skip(skip).limit(limit).execute().then(bars => {
+    let filters = {};
+    if (req.query.beer) {
+        filters['beers.name'] = req.query.beer;
+    }
+    if (req.query.type) {
+        filters['beers.type'] = req.query.type
+    }
+    if (req.query.tag) {
+        filters['tags'] = req.query.tag
+    }
+    if (req.query.happyhour) {
+        let weekday = new Date().toLocaleString("en", { weekday: "long" }).toLowerCase();
+        filters[`happyHourTime.${weekday}.start`] = {$lte: parseInt(req.query.happyhour)};
+        filters[`happyHourTime.${weekday}.end`] = {$gte: parseInt(req.query.happyhour)};
+    }
+    if (req.query.price) {
+        filters['beers.pricing.priceHappy'] = {$lt: parseInt(req.query.price)};
+    }
+    Bar.find(filters).execute().then(bars => {
         res.status(200).json(Bar.toListApi(bars));
-    })
+    });
 });
 
 router.get('/:id', (req, res) => {
