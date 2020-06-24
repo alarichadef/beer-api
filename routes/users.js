@@ -30,8 +30,8 @@ router.post('/signup', (req, res) => {
     }
 
     //Check if the user already exists
-    User.get({ email }).then(result => {
-        if (result) {
+    User.find({$or: [{email}, {username}] }).execute().then(result => {
+        if (result?.length) {
             return res.status(400).json({message: "User already exists", keyError: 'alreadyUsed'});
         }
         //Create the user
@@ -269,7 +269,7 @@ router.get('/list-user-responsabilities/:userId', auth, checkCurrentuser, (req, 
 });
 
 //Admin route listing every user responsabilities
-router.get('/list-user-responsabilities/', auth, admin, (req, res) => {
+router.get('/list-user-responsabilities', auth, admin, (req, res) => {
     Responsability.filter().execute().then(responsabilities => {
         //TODO Refresh token with this new responsabilities ?
         return res.status(200).json(Responsability.toListApi(responsabilities));
@@ -279,7 +279,7 @@ router.get('/list-user-responsabilities/', auth, admin, (req, res) => {
 });
 
 //Admin route listing every user ask for responsabilities
-router.get('/list-user-responsabilities/:userId', auth, admin, (req, res) => {
+router.get('/list-user-ask-responsabilities', auth, admin, (req, res) => {
     AskResponsability.filter().execute().then(responsabilities => {
         //TODO Refresh token with this new responsabilities ?
         return res.status(200).json(AskResponsability.toListApi(responsabilities));
