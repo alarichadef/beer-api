@@ -252,6 +252,7 @@ router.post('/upload-mister', upload.single('file'), (req, res) => {
             } else {
                 let beerBar = {
                     name: beer.name,
+                    type: beer.color,
                     pricing: [
                         {
                             priceBeer,
