@@ -5,6 +5,7 @@ const Bar = require('../models/bar');
 
 const Responsability = require('../models/responsability');
 const AskResponsability = require('../models/askResponsability');
+const Favourite = require('../models/favourite');
 const Utils = require('../tools/utils');
 const Token = require('../tools/token');
 const auth = require('../middleware/auth');
@@ -288,6 +289,42 @@ router.get('/list-user-ask-responsabilities', auth, admin, (req, res) => {
     });
 });
 
+//Route allowing to add a bar as favourite
+router.post('/favourites', auth, user, (req, res) => {
+    let {barId} = req.body;
+    if (!barId) {
+        return res.status(400).json({message: "Missing barId parameter", keyError: 'missingFields'});
+    }
+    let userId = req.user.id;
+    Bar.get({id: barId}).then(bar => {
+        if (!bar) {
+            return res.status(400).json({message: "Bar not found", keyError: 'barNotFound'});
+        }
+        Favourite.get({userId, barId}).then(favourite => {
+            if (favourite) {
+                return res.status(400).json({message: "User has already saved this bar", keyError: 'alreadySaved'});
+            }
+            let newFavourite = new Favourite({userId, barId});
+            newFavourite.save().then(newFav => {
+                return res.status(201).json(newFav.toApi());
+            }).catch(e => {
+                return res.status(500).json(e);
+                //sentry
+            });
+        });
+    });
+});
+
+//Allowing to list favourites from user
+//Current user route or admin
+router.get('/favourites/:userId', auth, checkCurrentuser, (req, res) => {
+    Favourite.filter({userId: req.params.userId}).execute().then(favourites => {
+        //TODO Refresh token with this new favourites ?
+        return res.status(200).json(Favourite.toListApi(favourites));
+    }).catch(e => {
+        //sentry
+    });
+});
 
 //Admin route allowing to delete an user with its email
 router.delete('/:email', auth, admin, (req, res) => {
@@ -313,3 +350,33 @@ router.delete('/:email', auth, admin, (req, res) => {
 });
 
 module.exports = router;
+
+/*
+
+
+var express = require('express');
+
+var app= express();
+
+var PixlMail = require('pixl-mail');
+
+
+app.get("/mail/:message", function(req, res, err){
+	var mail = new PixlMail( 'smtp.assos.utc.fr', 587 );
+	var message = 
+			"To: alarichadef@gmail.com\n" + 
+			"From: drinksforall75@gmail.com\n" + 
+			"Subject: Test mail node\n" +
+			"\n" +  
+			"Suck my dick, I'm looking for a way to send an email with a node app.\n";
+		mail.setOption( 'auth', { user: 'soireedesfinaux', pass: 'ChouilleALasVegasPicardie' } );
+		mail.send( message, function(err) {
+			if (err) console.log( "Mail Error: " + err );
+		} );
+
+});
+
+
+
+app.listen(85);
+*/
