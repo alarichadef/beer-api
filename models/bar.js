@@ -57,7 +57,7 @@ class Bar extends BarModel {
 
 	//Current bar object format to be sent through api
 	toApi() {
-		let {id, name, address, location, tags, type, characteristics, happyHourTime, openingTime, privateaserId, privateaserBookingUrl, beers, keywords} = this;
+		let {id, name, address, location, tags, type, characteristics, happyHourTime, openingTime, privateaserId, privateaserBookingUrl, beers, keywords, favouritesCount} = this;
 		return {
 			id,
 			name,
@@ -74,7 +74,8 @@ class Bar extends BarModel {
 			keywords,
 			opened: this.isOpened(),
 			inHappy: this.isHH(),
-			cheapestBeer: this.cheapestBeer
+			cheapestBeer: this.cheapestBeer,
+			favouritesCount
 		}
 	}
 

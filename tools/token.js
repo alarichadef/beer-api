@@ -40,7 +40,7 @@ class Token {
         return {error: false, token: _token};
     }
 
-    static create_payload(user, bars) {
+    static create_payload(user, bars, favourites) {
         let { id, username, email, isAdmin} = user;
         let payload = {
             sub: id,
@@ -48,13 +48,14 @@ class Token {
             email,
             isAdmin,
             bars,
+            favourites,
             exp: Date.now() + 1000 * 60 * 60 //1h le token ?
         }
         return payload;
     }
 
-    static create_token(user, bars=[]) {
-        let payload = Utils.toB64Url(JSON.stringify(this.create_payload(user, bars)));
+    static create_token(user, bars=[], favourites=[]) {
+        let payload = Utils.toB64Url(JSON.stringify(this.create_payload(user, bars, favourites)));
         let header = Utils.toB64Url(JSON.stringify(this.header()));
         let sign = this.sign(payload, header);
         return `${header}.${payload}.${sign}`;

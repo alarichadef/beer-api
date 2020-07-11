@@ -1,11 +1,13 @@
 const express = require('express');
 const Bar = require('../models/bar');
 const Beer = require('../models/beer');
+const Favourite = require('../models/favourite');
 const Responsability = require('../models/responsability');
 const AskResponsability = require('../models/askResponsability');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const owner = require('../middleware/owner');
+const Sentry = require('@sentry/node');
 
 var router = express.Router()
 
@@ -92,12 +94,16 @@ router.get('/:id', (req, res) => {
                     bar.beers[beerIndex] = {...bar.beers[beerIndex], ...beer.toApi()}
                 }
             });
-            return res.status(200).json(bar.toApi());
+            Favourite.filter({barId: id}).count().then(count => {
+                bar.favouritesCount = count;
+                return res.status(200).json(bar.toApi());
+            });
         }).catch(e => {
+            Sentry.captureException(e);
             return res.status(400).json({message: `error while finding beer related to bar`});
         });
     }).catch((e) => {
-        //Should never happen
+        Sentry.captureException(e);
         return res.status(400).json({message: `Several ${id} have been found`});
     });
 
