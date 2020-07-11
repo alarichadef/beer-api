@@ -2,9 +2,10 @@ const express = require('express');
 var router = express.Router()
 const User = require('../models/user');
 const Bar = require('../models/bar');
-
+const Sentry = require('@sentry/node');
 const Responsability = require('../models/responsability');
 const AskResponsability = require('../models/askResponsability');
+const Favourite = require('../models/favourite');
 const Utils = require('../tools/utils');
 const Token = require('../tools/token');
 const auth = require('../middleware/auth');
@@ -12,7 +13,7 @@ const admin = require('../middleware/admin');
 const owner = require('../middleware/owner');
 const checkCurrentuser = require('../middleware/checkCurrentUser');
 
-router.post('/signup', (req, res) => {
+router.post('/signup', (req, res, next) => {
     let { username, email, password, passwordConfirmed } = req.body;
     //validate fields
     if(!username || !email || !password || !passwordConfirmed) {
@@ -40,12 +41,23 @@ router.post('/signup', (req, res) => {
         let user = new User({username, email, password: hashPass});
         user.save().then(user => {
             if (!user) {
-                return res.status(500).json({message: 'Error while creating the user'})
+                return next({status: 500, content: {message: 'Error while creating the user', keyError: 'UserCreation'}});
             }
             //Create a token and send it back
             let token = Token.create_token(user);
+            Sentry.configureScope(scope => {
+                scope.setExtra('username', user.username);
+                scope.setExtra('email', user.email);
+            });
+            Utils.sendRegistrationMail(user).then(() => {
+                console.log('mail has been sent');
+            }).catch(e => {
+                Sentry.captureException(e);
+            })
             return res.status(201).json({token});
-        })
+        }).catch(e => {
+            Sentry.captureException(e);
+        });
     });
 });
 
@@ -62,14 +74,24 @@ router.post('/signin', (req, res) => {
         if(!user) {
             return res.status(400).json({message: 'No user has been found', keyError: 'userNotFound'});
         }
-        //Get his bars
-        Responsability.find({userId: user.id}).execute().then(responsabilities => {
-            let barsId = Responsability.toListApiId(responsabilities);
-            //Create a token and send it back
-            let token = Token.create_token(user, barsId);
-            return res.status(200).json({token});
+        Sentry.configureScope(scope => {
+            scope.setExtra('username', user.username);
+            scope.setExtra('email', user.email);
         });
-    }).catch(e => {
+        //Get his bars
+        let barsId;
+        Responsability.find({userId: user.id}).execute().then(responsabilities => {
+            barsId = Responsability.toListApiId(responsabilities);
+            //Get his favourites
+            return Favourite.find({userId: user.id}).execute();
+        }).then(favourites => {
+            let favouritesId = Favourite.toListApiId(favourites);
+            //Create a token and send it back
+            let token = Token.create_token(user, barsId, favouritesId);
+            return res.status(200).json({token});
+        }).catch(e => {
+            Sentry.captureException(e);
+        });
     });
 });
 
@@ -288,6 +310,69 @@ router.get('/list-user-ask-responsabilities', auth, admin, (req, res) => {
     });
 });
 
+//Route allowing to add a bar as favourite
+router.post('/favourites', auth, checkCurrentuser, (req, res) => {
+    let {barId} = req.body;
+    if (!barId) {
+        return next({status: 400, content: {message: "Missing barId parameter", keyError: 'missingFields'}});
+    }
+    let userId = req.user.id;
+    Bar.get({id: barId}).then(bar => {
+        if (!bar) {
+            return next({status: 400, content: {message: "Bar not found", keyError: 'barNotFound'}});
+        }
+        Favourite.get({userId, barId}).then(favourite => {
+            if (favourite) {
+                return next({status: 400, content: {message: "User has already saved this bar", keyError: 'alreadySaved'}});
+            }
+            let newFavourite = new Favourite({userId, barId});
+            newFavourite.save().then(newFav => {
+                return res.status(201).json(newFav.toApi());
+            }).catch(e => {
+                Sentry.captureException(e);
+                return res.status(500).json(e);
+            });
+        });
+    });
+});
+
+
+//Route allowing to add a bar as favourite
+router.delete('/favourites', auth, checkCurrentuser, (req, res, next) => {
+    let {barId} = req.body;
+    if (!barId) {
+        return next({status: 400, content: {message: "Missing barId parameter", keyError: 'missingFields'}});
+    }
+    let userId = req.user.id;
+    Bar.get({id: barId}).then(bar => {
+        if (!bar) {
+            return next({status: 400, content: {message: "Bar not found", keyError: 'barNotFound'}});
+        }
+        Favourite.get({userId, barId}).then(favourite => {
+            if (!favourite) {
+                return next({status: 400, content: {message: "User has not saved this bar", keyError: 'notSaved'}});
+            }
+            favourite.delete().then(r => {
+                return res.status(201).json(r);
+            }).catch(e => {
+                Sentry.captureException(e);
+                return res.status(500).json(e);
+            });
+        });
+    });
+});
+
+
+//Allowing to list favourites from user
+//Current user route or admin
+router.get('/favourites/:userId', auth, checkCurrentuser, (req, res) => {
+    Favourite.filter({userId: req.params.userId}).execute().then(favourites => {
+        //TODO Refresh token with this new favourites ?
+        return res.status(200).json(Favourite.toListApi(favourites));
+    }).catch(e => {
+        //sentry
+    });
+});
 
 //Admin route allowing to delete an user with its email
 router.delete('/:email', auth, admin, (req, res) => {

@@ -1,4 +1,5 @@
 const Crypto = require('crypto');
+const MailClient = require('./mail/mailClient');
 
 let Utils = {};
 
@@ -137,6 +138,12 @@ Utils.isValidBearer = token => {
         return false;
     }
     return credentials;
+}
+
+Utils.sendRegistrationMail = (user) => {
+    const text = `Hi ${user.username}, welcome to Drinks for all !`;
+    const subject = `Drinks for All`;
+    return MailClient.sendMail({ from: process.env.MAIL_USERNAME, to: user.email, subject, text});
 }
 
 module.exports = Utils;
