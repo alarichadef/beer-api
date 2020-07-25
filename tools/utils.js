@@ -39,7 +39,7 @@ Utils.getWeekday = () => {
 }
 
 Utils.isDateIncluded = (date, dMin, dMax) => {
-    return Date.parse(date) > Date.parse(dMin) ? (Date.parse(date) < Date.parse(dMax) ? true : false) : false;
+    return date > dMin ? (date < dMax ? true : false) : false;
 }
 
 //If we store date with a simple datetime 1970 with correct hours/minute

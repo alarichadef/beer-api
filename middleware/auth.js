@@ -2,6 +2,7 @@
 const Token = require('../tools/token');
 const User = require('../models/user');
 const Utils = require('../tools/utils');
+const Sentry = require('@sentry/node');
 
 module.exports = (req, res, next) => {
     let token = req.get('authorization');
@@ -20,7 +21,7 @@ module.exports = (req, res, next) => {
         req.user = user;
         return next();
     }).catch(e => {
-        //add sentry error here
+        Sentry.captureException(e);
         return res.status(500).json({message: 'a weird error occured here', keyError: 'death'});
     });
 }

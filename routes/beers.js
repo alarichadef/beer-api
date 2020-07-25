@@ -14,8 +14,8 @@ router.get('/', (req, res) => {
     if (!skip || isNaN(skip) || skip < 0) {
         skip = 0;
     }
-    if (!limit || isNaN(limit) || (limit - skip > 20)) {
-        limit = skip + 19;
+    if (!limit || isNaN(limit) || limit > 20) {
+        limit = 20;
     }
     Beer.find().skip(skip).limit(limit).execute().then(beers => {
         res.status(200).json(Beer.toListApi(beers));

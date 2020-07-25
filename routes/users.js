@@ -311,7 +311,7 @@ router.get('/list-user-ask-responsabilities', auth, admin, (req, res) => {
 });
 
 //Route allowing to add a bar as favourite
-router.post('/favourites', auth, checkCurrentuser, (req, res) => {
+router.post('/favourites', auth, checkCurrentuser, (req, res, next) => {
     let {barId} = req.body;
     if (!barId) {
         return next({status: 400, content: {message: "Missing barId parameter", keyError: 'missingFields'}});
@@ -338,8 +338,8 @@ router.post('/favourites', auth, checkCurrentuser, (req, res) => {
 
 
 //Route allowing to add a bar as favourite
-router.delete('/favourites', auth, checkCurrentuser, (req, res, next) => {
-    let {barId} = req.body;
+router.delete('/favourites/:barId', auth, checkCurrentuser, (req, res, next) => {
+    let { barId } = req.params;
     if (!barId) {
         return next({status: 400, content: {message: "Missing barId parameter", keyError: 'missingFields'}});
     }
