@@ -8,7 +8,7 @@ const Utils = require('../tools/utils');
 var upload = multer();
 
 const params = {
-    Bucket: "beer-storage",
+    Bucket: process.env.BUCKET,
     Expires: 60*60, // expiry time
     ACL: "bucket-owner-full-control",
     ContentType: "image/jpeg", // this can be changed as per the file type,
