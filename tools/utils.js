@@ -48,7 +48,7 @@ Utils.getTimeFromHourMinuteSeconde = () => {
     let date = new Date;
     return date.getSeconds() * 1000
         + date.getMinutes() * 60 * 1000
-        + date.getHours() * 60 * 60 * 1000;
+        + (date.getHours() - 1) * 60 * 60 * 1000;
 }
 
 Utils.validateEmail = email => {
