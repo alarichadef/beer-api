@@ -366,11 +366,12 @@ router.delete('/favourites/:barId', auth, checkCurrentuser, (req, res, next) => 
 //Allowing to list favourites from user
 //Current user route or admin
 router.get('/favourites/:userId', auth, checkCurrentuser, (req, res) => {
-    Favourite.filter({userId: req.params.userId}).execute().then(favourites => {
+    Favourite.filter({userId: req.params.userId, __deleted: false}).execute().then(favourites => {
         //TODO Refresh token with this new favourites ?
         return res.status(200).json(Favourite.toListApi(favourites));
     }).catch(e => {
-        //sentry
+        Sentry.captureException(e);
+        return res.status(500).json(e);
     });
 });
 
