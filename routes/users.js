@@ -190,7 +190,7 @@ router.delete('/bar-responsability', auth, admin, (req, res) => {
                     return res.status(400).json({message: "User not responsible", keyError: 'notOwner'});
                 }
                 responsability.delete().then(r => {
-                    return res.status(201).json(r);
+                    return res.status(200).json(r);
                 }).catch(e => {
                     return res.status(500).json(e);
                     //sentry
@@ -272,7 +272,9 @@ router.post('/handle-bar-responsability', auth, owner, (req, res) => {
 //TODO add filters in parameters to handle accepted, denied etc...
 router.get('/list-user-ask-responsabilities/:userId', auth, checkCurrentuser, (req, res) => {
     AskResponsability.filter({userId: req.params.userId}).execute().then(askResponsabilities => {
-        return res.status(200).json(AskResponsability.toListApi(askResponsabilities));
+        AskResponsability.toAggregate(askResponsabilities).then(resps => {
+            return res.status(200).json(AskResponsability.toListApi(resps));
+        });
     }).catch(e => {
         //sentry
     });
@@ -284,7 +286,9 @@ router.get('/list-user-ask-responsabilities/:userId', auth, checkCurrentuser, (r
 router.get('/list-user-responsabilities/:userId', auth, checkCurrentuser, (req, res) => {
     Responsability.filter({userId: req.params.userId}).execute().then(responsabilities => {
         //TODO Refresh token with this new responsabilities ?
-        return res.status(200).json(Responsability.toListApi(responsabilities));
+        Responsability.toAggregate(responsabilities).then(resps => {
+            return res.status(200).json(Responsability.toListApi(resps));
+        });
     }).catch(e => {
         //sentry
     });
@@ -294,7 +298,9 @@ router.get('/list-user-responsabilities/:userId', auth, checkCurrentuser, (req, 
 router.get('/list-user-responsabilities', auth, admin, (req, res) => {
     Responsability.filter().execute().then(responsabilities => {
         //TODO Refresh token with this new responsabilities ?
-        return res.status(200).json(Responsability.toListApi(responsabilities));
+        Responsability.toAggregate(responsabilities).then(resps => {
+            return res.status(200).json(Responsability.toListApi(resps));
+        });
     }).catch(e => {
         //sentry
     });
@@ -304,7 +310,9 @@ router.get('/list-user-responsabilities', auth, admin, (req, res) => {
 router.get('/list-user-ask-responsabilities', auth, admin, (req, res) => {
     AskResponsability.filter().execute().then(responsabilities => {
         //TODO Refresh token with this new responsabilities ?
-        return res.status(200).json(AskResponsability.toListApi(responsabilities));
+        AskResponsability.toAggregate(responsabilities).then(resps => {
+            return res.status(200).json(AskResponsability.toListApi(resps));
+        });
     }).catch(e => {
         //sentry
     });
@@ -353,7 +361,7 @@ router.delete('/favourites/:barId', auth, checkCurrentuser, (req, res, next) => 
                 return next({status: 400, content: {message: "User has not saved this bar", keyError: 'notSaved'}});
             }
             favourite.delete().then(r => {
-                return res.status(201).json(r);
+                return res.status(200).json(r);
             }).catch(e => {
                 Sentry.captureException(e);
                 return res.status(500).json(e);

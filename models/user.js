@@ -11,8 +11,9 @@ class User extends UserModel {
     }
 
     toApi() {
-        let {username, email, isAdmin} = this;
+        let {id, username, email, isAdmin} = this;
         return {
+            id,
             username,
             email,
             isAdmin
