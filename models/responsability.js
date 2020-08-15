@@ -32,22 +32,22 @@ class Responsability extends ResponsabilityModel {
 			}
         });
         let cursor = Responsability.aggregate(aggregation_pipeline);
-		cursor.toArray().then(resps => {
+		return cursor.toArray().then(resps => {
             if(resps.length > 1) {
 				throw new Error(`Aggregate returned more than one object, it returned ${resps.length}`);
 			}
-            let resp = resps.shift();
+            let resp = resps[0];
             let bar = Bar.fromJSON(resp.bar)?.[0];
             let user = User.fromJSON(resp.user)?.[0];
             return {id, bar: bar?.toApi(), user: user?.toApi()}
-		}).catch(e => console.warn('err', e));
+		});
     }
     toApiId() {
         let {barId} = this;
         return {barId};
     }
 
-    static toAggregate(barUsers) {
+    static toListApi(barUsers) {
         let aggregation_pipeline = [{
 			'$match': {id: {$in: barUsers.map(barUser => barUser.id)}}
 		}];
@@ -67,16 +67,13 @@ class Responsability extends ResponsabilityModel {
 			}
         });
         let cursor = Responsability.aggregate(aggregation_pipeline);
-		return cursor.toArray();
-    }
-
-    static toListApi(barUsers) {
-        return barUsers.map(barUser => {
-            let bar = Bar.fromJSON(barUser.bar)?.[0];
-            let user = User.fromJSON(barUser.user)?.[0];
-            return {id: barUser.id, bar: bar?.toApi() || null, user: user?.toApi() || null}
+		return cursor.toArray().then(barUsers => {
+            return barUsers.map(barUser => {
+                let bar = Bar.fromJSON(barUser.bar)?.[0];
+                let user = User.fromJSON(barUser.user)?.[0];
+                return {id: barUser.id, bar: bar?.toApi() || null, user: user?.toApi() || null}
+            });
         });
-
     }
 
     static toListApiId(barUsers) {

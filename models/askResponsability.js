@@ -18,11 +18,39 @@ class AskResponsability extends AskResponsabilityModel {
     }
     //Todo: add other toApi method for bar and user with less or more informations
     toApi() {
-        let {id, userId, barId, reason, pictures,studied, accepted} = this;
-        return {id, reason, pictures, studied, accepted, userId, barId}
+        let {id, reason, pictures,studied, accepted} = this;
+        let aggregation_pipeline = [{
+			'$match': {id}
+		}];
+        aggregation_pipeline.push({
+			'$lookup': {
+				from: 'users',
+				localField: 'userId',
+				foreignField: 'id',
+				as: 'user'
+			}
+        }, {
+			'$lookup': {
+				from: 'bars',
+				localField: 'barId',
+				foreignField: 'id',
+				as: 'bar'
+			}
+        });
+        let cursor = AskResponsability.aggregate(aggregation_pipeline);
+		return cursor.toArray().then(resps => {
+            if(resps.length > 1) {
+				throw new Error(`Aggregate returned more than one object, it returned ${resps.length}`);
+            }
+            let resp = resps.shift();
+            let bar = Bar.fromJSON(resp.bar)?.[0];
+            let user = User.fromJSON(resp.user)?.[0];
+            return {id, reason, pictures, studied, accepted, bar: bar?.toApi(), user: user?.toApi()}
+		});
+
     }
 
-    static toAggregate(askResponsabilities) {
+    static toListApi(askResponsabilities) {
         let aggregation_pipeline = [{
 			'$match': {id: {$in: askResponsabilities.map(askResponsability => askResponsability.id)}}
 		}];
@@ -42,14 +70,13 @@ class AskResponsability extends AskResponsabilityModel {
 			}
         });
         let cursor = AskResponsability.aggregate(aggregation_pipeline);
-		return cursor.toArray();
-    }
-
-    static toListApi(askResponsabilities) {
-        return askResponsabilities.map(askResponsability => {
-            let bar = Bar.fromJSON(askResponsability.bar)?.[0];
-            let user = User.fromJSON(askResponsability.user)?.[0];
-            return {id: askResponsability.id, bar: bar?.toApi() || null, user: user?.toApi() || null}
+		return cursor.toArray().then(askResponsabilities => {
+            return askResponsabilities.map(askResponsability => {
+                let {id, reason, pictures,studied, accepted} = askResponsability;
+                let bar = Bar.fromJSON(askResponsability.bar)?.[0];
+                let user = User.fromJSON(askResponsability.user)?.[0];
+                return { id,reason,studied, accepted, pictures, bar: bar?.toApi() || null, user: user?.toApi() || null}
+            });
         });
     }
 
