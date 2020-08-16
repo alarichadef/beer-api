@@ -146,4 +146,10 @@ Utils.sendRegistrationMail = (user) => {
     return MailClient.sendMail({ from: process.env.MAIL_USERNAME, to: user.email, subject, text});
 }
 
+Utils.sendHandleAskOwnershipMail = (user, bar, askState) => {
+    const text = `Hi ${user.username}, You ask to be owner of the bar ${bar.name} ! It has been ${askState ? 'accepted' : 'declined'}.`;
+    const subject = `Responsability`;
+    return MailClient.sendMail({ from: process.env.MAIL_USERNAME, to: user.email, subject, text});
+}
+
 module.exports = Utils;

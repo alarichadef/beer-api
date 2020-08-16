@@ -53,7 +53,7 @@ router.post('/signup', (req, res, next) => {
                 console.log('mail has been sent');
             }).catch(e => {
                 Sentry.captureException(e);
-            })
+            });
             return res.status(201).json({token});
         }).catch(e => {
             Sentry.captureException(e);
@@ -160,7 +160,9 @@ router.post('/bar-responsability', auth, admin, (req, res) => {
                 }
                 let newResponsability = new Responsability({userId, barId});
                 newResponsability.save().then(newResp => {
-                    return res.status(201).json(newResp.toApi());
+                    newResp.toApi().then(resp => {
+                        return res.status(201).json(resp);
+                    });
                 }).catch(e => {
                     return res.status(500).json(e);
                     //sentry
@@ -220,21 +222,23 @@ router.post('/ask-for-bar-responsability', auth, (req, res) => {
             }
             let newAskResponsability = new AskResponsability({barId, userId, reason, pictures, studied, accepted});
             newAskResponsability.save().then(newAsk => {
-                return res.status(201).json(newAsk.toApi());
+                newAsk.toApi().then(ask => {
+                    return res.status(201).json(ask);
+                });
             }).catch(e => {
                 //sentry
                 return res.status(500).json(e);
             });
         });
-    })
+    });
 });
 
 //accept a ask for bar responsability
 //only for admin and bar owner
-router.post('/handle-bar-responsability', auth, owner, (req, res) => {
+router.post('/handle-bar-responsability', (req, res) => {
     let { userId, barId, stateRequest } = req.body;
-    if (!userId || !barId || !stateRequest) {
-        return res.status(400).json({message: "Missing userId or barId parameter or state request", keyError: 'missingFields'});
+    if (!userId || !barId) {
+        return res.status(400).json({message: "Missing userId or barId parameter", keyError: 'missingFields'});
     }
     if (![true, false].includes(stateRequest)) {
         return res.status(400).json({message: "stateRequest value must be a boolean", keyError: 'invalidFields'});
@@ -250,12 +254,26 @@ router.post('/handle-bar-responsability', auth, owner, (req, res) => {
         askResponsability.update({studied: true, accepted: stateRequest});
         askResponsability.save().then(ask => {
             if (stateRequest === false) {
-                return res.status(200).json({message: 'declined', ...ask.toApi()});
+                ask.toApi().then(ask => {
+                    Utils.sendHandleAskOwnershipMail(ask.user, ask.bar, stateRequest).then(() => {
+                        console.log('mail has been sent');
+                    }).catch(e => {
+                        Sentry.captureException(e);
+                    });
+                    return res.status(200).json({message: 'declined', ...ask});
+                });
             }
             //So create the responsability related
             let newResponsability = new Responsability({userId, barId});
             newResponsability.save().then(newResp => {
-                return res.status(201).json({message: 'accepted', ...newResp.toApi()});
+                newResp.toApi().then(resp => {
+                    Utils.sendHandleAskOwnershipMail(resp.user, resp.bar, stateRequest).then(() => {
+                        console.log('mail has been sent');
+                    }).catch(e => {
+                        Sentry.captureException(e);
+                    });
+                    return res.status(201).json({message: 'accepted', ...resp});
+                })
             }).catch(e => {
                 return res.status(500).json(e);
                 //sentry
@@ -272,8 +290,8 @@ router.post('/handle-bar-responsability', auth, owner, (req, res) => {
 //TODO add filters in parameters to handle accepted, denied etc...
 router.get('/list-user-ask-responsabilities/:userId', auth, checkCurrentuser, (req, res) => {
     AskResponsability.filter({userId: req.params.userId}).execute().then(askResponsabilities => {
-        AskResponsability.toAggregate(askResponsabilities).then(resps => {
-            return res.status(200).json(AskResponsability.toListApi(resps));
+        AskResponsability.toListApi(askResponsabilities).then(resps => {
+            return res.status(200).json(resps);
         });
     }).catch(e => {
         //sentry
@@ -286,8 +304,8 @@ router.get('/list-user-ask-responsabilities/:userId', auth, checkCurrentuser, (r
 router.get('/list-user-responsabilities/:userId', auth, checkCurrentuser, (req, res) => {
     Responsability.filter({userId: req.params.userId}).execute().then(responsabilities => {
         //TODO Refresh token with this new responsabilities ?
-        Responsability.toAggregate(responsabilities).then(resps => {
-            return res.status(200).json(Responsability.toListApi(resps));
+        Responsability.toListApi(responsabilities).then(resps => {
+            return res.status(200).json(resps);
         });
     }).catch(e => {
         //sentry
@@ -298,8 +316,8 @@ router.get('/list-user-responsabilities/:userId', auth, checkCurrentuser, (req, 
 router.get('/list-user-responsabilities', auth, admin, (req, res) => {
     Responsability.filter().execute().then(responsabilities => {
         //TODO Refresh token with this new responsabilities ?
-        Responsability.toAggregate(responsabilities).then(resps => {
-            return res.status(200).json(Responsability.toListApi(resps));
+        Responsability.toListApi(responsabilities).then(resps => {
+            return res.status(200).json(resps);
         });
     }).catch(e => {
         //sentry
@@ -310,8 +328,8 @@ router.get('/list-user-responsabilities', auth, admin, (req, res) => {
 router.get('/list-user-ask-responsabilities', auth, admin, (req, res) => {
     AskResponsability.filter().execute().then(responsabilities => {
         //TODO Refresh token with this new responsabilities ?
-        AskResponsability.toAggregate(responsabilities).then(resps => {
-            return res.status(200).json(AskResponsability.toListApi(resps));
+        AskResponsability.toListApi(responsabilities).then(resps => {
+            return res.status(200).json(resps);
         });
     }).catch(e => {
         //sentry

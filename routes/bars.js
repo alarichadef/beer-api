@@ -39,7 +39,9 @@ router.get('/', (req, res) => {
 //Admin and bar owners route
 router.get('/list-bar-responsables/:barId', auth, owner, (req, res) => {
     Responsability.filter({barId: req.params.barId}).execute().then(responsabilities => {
-        return res.status(200).json(Responsability.toListApi(responsabilities));
+        Responsability.toListApi(responsabilities).then(resps => {
+            return res.status(200).json(resps);
+        });
     }).catch(e => {
         //sentry
     });
@@ -49,7 +51,9 @@ router.get('/list-bar-responsables/:barId', auth, owner, (req, res) => {
 //Admin and bar owners route
 router.get('/list-bar-ask-responsables/:barId', auth, owner, (req, res) => {
     AskResponsability.filter({barId: req.params.barId}).execute().then(askResponsabilities => {
-        return res.status(200).json(AskResponsability.toListApi(askResponsabilities));
+        AskResponsability.toListApi(askResponsabilities).then(resps => {
+            return res.status(200).json(resps);
+        });
     }).catch(e => {
         //sentry
     });
@@ -59,7 +63,9 @@ router.get('/list-bar-ask-responsables/:barId', auth, owner, (req, res) => {
 //Admin route
 router.get('/list-bar-responsables', auth, admin, (req, res) => {
     Responsability.filter().execute().then(responsabilities => {
-        return res.status(200).json(Responsability.toListApi(responsabilities));
+        Responsability.toListApi(responsabilities).then(resps => {
+            return res.status(200).json(resps);
+        });
     }).catch(e => {
         //sentry
     });
@@ -69,7 +75,9 @@ router.get('/list-bar-responsables', auth, admin, (req, res) => {
 //Admin route
 router.get('/list-bar-ask-responsables', auth, owner, (req, res) => {
     AskResponsability.filter().execute().then(askResponsabilities => {
-        return res.status(200).json(AskResponsability.toListApi(askResponsabilities));
+        AskResponsability.toListApi(askResponsabilities).then(resps => {
+            return res.status(200).json(resps);
+        });
     }).catch(e => {
         //sentry
     });
