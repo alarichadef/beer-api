@@ -10,6 +10,9 @@ module.exports = (req, res, next) => {
         userId = req.params.userId
     }
     if (!userId) {
+        userId = req.query.userId
+    }
+    if (!userId) {
         return res.status(400).json({message: 'Missing user Id', keyError: 'missingFields'});
     }
 

@@ -424,4 +424,13 @@ router.delete('/:email', auth, admin, (req, res) => {
     });
 });
 
+router.get('/me', auth, (req, res, next) => {
+    req.user.toExtendedApi().then(user => {
+        return res.status(200).json(user);
+    }).catch(e => {
+        Sentry.captureException(e);
+        return next({status: 500, content: {message: 'Error while getting the user', keyError: 'userError'}});
+    });
+});
+
 module.exports = router;
